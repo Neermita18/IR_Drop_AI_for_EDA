@@ -38,7 +38,7 @@ Raw physical data cannot be fed directly into a neural network. We applied:
 ---
 
 ## 3. Model Architecture
-The model uses **Input Attention Mechanism**, which solves the blurriness problem common in standard U-Nets. This is referenced from [CircuitNet's(https://circuitnet.github.io/tutorial/experiment_tutorial.html#ir-drop-prediction)] official tutorial.
+The model uses **Input Attention Mechanism**, which solves the blurriness problem common in standard U-Nets. This is referenced from [CircuitNet's](https://circuitnet.github.io/tutorial/experiment_tutorial.html#ir-drop-prediction) official tutorial.
 
 ### Architecture Components
 1.  **Spatial Encoder (2D):** A CNN extracting geometric features from the static power maps.
