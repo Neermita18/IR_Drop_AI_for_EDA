@@ -1,4 +1,4 @@
-# IR_Drop_AI_for_EDA
+# IR Drop Prediction with ST-IA-UNet
 
 Predict IR-drop (voltage drop) on VLSI layouts using a hybrid spatial–temporal UNet-style model trained on CircuitNet-derived data.
 
