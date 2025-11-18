@@ -1,6 +1,6 @@
-# ST-IA-UNet: Spatial-Temporal Input-Attention U-Net for IR Drop Prediction
+# ST-UNet: Spatial-Temporal U-Net for IR Drop Prediction
 
-**ST-IA-UNet** is a deep learning model designed to predict static IR-drop (voltage drop) on VLSI chip layouts. By fusing 2D spatial power maps with 3D transient power sequences, it serves as a fast surrogate for expensive EDA simulations, instantly identifying voltage hotspots in complex power grids.
+**ST-UNet** is a deep learning model designed to predict static IR-drop (voltage drop) on VLSI chip layouts. By fusing 2D spatial power maps with 3D transient power sequences, it serves as a fast surrogate for expensive EDA simulations, instantly identifying voltage hotspots in complex power grids.
 
 This model is trained on the **CircuitNet** dataset.
 
