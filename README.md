@@ -35,7 +35,8 @@ Raw physical data cannot be fed directly into a neural network. We applied:
 * **Resizing:** All maps standardized to $256 \times 256$.
 * **Normalization:** Min-Max normalization to $[0, 1]$.
 * **Log-Scaling:** Ground truth labels are compressed using a logarithmic formula to handle the high dynamic range of voltage drops (preventing the model from ignoring rare spikes):
-    $$y = \frac{\log_{10}(x) + 6}{\log_{10}(50) + 6}$$
+
+    $$y = \frac{\log(1 + x)}{\log(1 + x_{\max})}$$
 
 ---
 
@@ -44,13 +45,15 @@ The model uses **Input Attention Mechanism**, which solves the blurriness proble
 
 ### Architecture Components
 1.  **Spatial Encoder (2D):** A CNN extracting geometric features from the static power maps.
-2.  **Temporal Encoder (3D):** A 3D CNN processing time-series data. It uses `AdaptiveAvgPool3d` to collapse the time dimension, effectively asking: *"What was the peak activity at this location across the entire time window?"*
+2.  **Temporal Encoder (3D):** A 3D CNN processing time-series data. It uses `AdaptiveAvgPool3d` to collapse the time dimension, effectively asking: *"What was the average or peak activity at this location across the entire time window?"*
 3.  **Fusion Bottleneck:** The features from both encoders are concatenated, merging structural info (grid layout) with dynamic info (activity spikes).
 
 ### The "Input Attention" Trick
 Instead of generating the IR drop image from scratch (which causes blur), the decoder predicts **4 Weight Maps**. These weights are multiplied element-wise with the original high-resolution **Input Spatial Maps**.
 
 $$\text{Output} = \sum (\text{Input Spatial Maps} \times \text{Learned Weights})$$
+
+This transfers the crisp, sharp power-grid geometry directly into the prediction.
 
 ---
 
@@ -68,7 +71,7 @@ $$L_{Total} = L_{MAE} + \lambda \times L_{Gradient}$$
 ## 5. Results
 * **Training Data:** 50 Samples (CircuitNet Subset)
 * **Test Data:** 10 Samples
-* **Final Accuracy:** The model achieved an average error of **~9.75 Volts** on a scale of 0-50V.
+* **Final Accuracy:** The model achieved an average error of **~9.75 Volts** on a scale of 0–50 V.
 * **Visual Quality:** The model successfully reconstructs fine-grained power grid lines and correctly locates "hotspots" (yellow areas) where voltage drop is critical.
 
 ---
