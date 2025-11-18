@@ -20,70 +20,77 @@ In modern semiconductor chip design, power is distributed through a massive grid
 The model uses data derived from the **CircuitNet** dataset.
 
 ### Input Features
-1.  **Spatial Features (2D):** Four channels representing static power components.
-    * `power_i` (Internal Power)
-    * `power_s` (Switching Power)
-    * `power_sca` (Leakage Power)
-    * `power_all` (Total Static Power)
-    * *Shape:* $(Batch, 4, 256, 256)$
-2.  **Temporal Features (3D):** A sequence of 20 time-steps showing dynamic power fluctuations.
-    * `power_t` (Transient Power)
-    * *Shape:* $(Batch, 1, 20, 256, 256)$
+1. **Spatial Features (2D):** Four channels representing static power components.
+   * `power_i` (Internal Power)  
+   * `power_s` (Switching Power)  
+   * `power_sca` (Leakage Power)  
+   * `power_all` (Total Static Power)  
+   * **Shape:** $(Batch, 4, 256, 256)$
+
+2. **Temporal Features (3D):** A sequence of 20 time-steps showing dynamic power fluctuations.
+   * `power_t` (Transient Power)  
+   * **Shape:** $(Batch, 1, 20, 256, 256)$
 
 ### Preprocessing Pipeline
-Raw physical data cannot be fed directly into a neural network. We applied:
-* **Resizing:** All maps standardized to $256 \times 256$.
-* **Normalization:** Min-Max normalization to $[0, 1]$.
-* **Log-Scaling:** Ground truth labels are compressed using a logarithmic formula to handle the high dynamic range of voltage drops (preventing the model from ignoring rare spikes):
+* **Resizing:** All maps standardized to $256 \times 256$.  
+* **Normalization:** Min–Max normalization to $[0, 1]$.  
+* **Log-Scaling:** Ground truth labels compressed using a logarithmic formula to handle the high dynamic range of voltage drops:
 
-    $$y = \frac{\log(1 + x)}{\log(1 + x_{\max})}$$
+  $$y = \frac{\log(1 + x)}{\log(1 + x_{\max})}$$
 
 ---
 
 ## 3. Model Architecture
-The model uses **Input Attention Mechanism**, which solves the blurriness problem common in standard U-Nets. This is referenced from [CircuitNet's](https://circuitnet.github.io/tutorial/experiment_tutorial.html#ir-drop-prediction) official tutorial.
+The model draws structural inspiration from CircuitNet but follows a **direct prediction architecture**. It uses:
 
 ### Architecture Components
-1.  **Spatial Encoder (2D):** A CNN extracting geometric features from the static power maps.
-2.  **Temporal Encoder (3D):** A 3D CNN processing time-series data. It uses `AdaptiveAvgPool3d` to collapse the time dimension, effectively asking: *"What was the average or peak activity at this location across the entire time window?"*
-3.  **Fusion Bottleneck:** The features from both encoders are concatenated, merging structural info (grid layout) with dynamic info (activity spikes).
+1. **Spatial Encoder (2D):** Extracts geometric and structural features from static power maps.
+2. **Temporal Encoder (3D):** Processes time-series power data.  
+   `AdaptiveAvgPool3d` collapses the time dimension, summarizing temporal behavior at each spatial location.
+3. **Fusion Bottleneck:** The spatial and temporal feature maps are concatenated and jointly decoded.
 
-### The "Input Attention" Trick
-Instead of generating the IR drop image from scratch (which causes blur), the decoder predicts **4 Weight Maps**. These weights are multiplied element-wise with the original high-resolution **Input Spatial Maps**.
+### Decoder
+A standard U-Net decoder upsamples fused features and integrates skip connections from the encoder.  
+The final layer predicts a **single** IR-drop map:
 
-$$\text{Output} = \sum (\text{Input Spatial Maps} \times \text{Learned Weights})$$
-
-This transfers the crisp, sharp power-grid geometry directly into the prediction.
+$$\text{Output Shape} = (Batch, 1, 256, 256)$$
 
 ---
 
 ## 4. Training Strategy
-We used a **Balanced Loss Function** to ensure both numerical accuracy and visual sharpness.
+We used a **balanced loss function** to ensure both numerical accuracy and visual sharpness:
 
 $$L_{Total} = L_{MAE} + \lambda \times L_{Gradient}$$
 
-* **L1 Loss ($L_{MAE}$):** Ensures accurate voltage values.
-* **Gradient Difference Loss:** Penalizes blurriness by comparing the edges (derivatives) of the prediction against the ground truth.
-* **Weighting:** We set $\lambda = 0.1$, a "Goldilocks" zone that sharpens grid lines without introducing noise artifacts.
+* **L1 Loss ($L_{MAE}$):** Ensures voltage values are numerically accurate.  
+* **Gradient Difference Loss:** Preserves spatial sharpness by comparing pixel-wise derivatives.  
+* **Weighting:** $\lambda = 0.1$, which sharpens power-grid edges without amplifying noise.
 
 ---
 
 ## 5. Results
-* **Training Data:** 50 Samples (CircuitNet Subset)
-* **Test Data:** 10 Samples
-* **Final Accuracy:** The model achieved an average error of **~9.75 Volts** on a scale of 0–50 V.
-* **Visual Quality:** The model successfully reconstructs fine-grained power grid lines and correctly locates "hotspots" (yellow areas) where voltage drop is critical.
+* **Training Data:** 50 Samples  
+* **Test Data:** 10 Samples  
+* **Final Accuracy:** Average error of **~9.75 Volts** on a scale of 0–50 V.  
+* **Visual Quality:**  
+  The predictions reconstruct:
+  * fine-grained vertical and horizontal power rails,  
+  * high-drop "hotspot" regions,  
+  demonstrating the effectiveness of spatial–temporal feature fusion.
 
 ---
 
 ## 6. Repository Structure
-* `ST_IA_UNet_IR_drop.ipynb` — Main experiment notebook (Data loading, Model definition, Training, Evaluation).
-* `decompress_IR_drop.py` — Helper script to reassemble and decompress raw CircuitNet tarballs.
-* `create_subset.py` — Script to generate the fixed train/test split used in this experiment.
-* `irdropnet_final.pth` — Trained model weights.
+* `ST_IA_UNet_IR_drop.ipynb` — Main notebook (data loading, model, training, evaluation)  
+* `decompress_IR_drop.py` — Reassembly/decompression for raw CircuitNet archives  
+* `create_subset.py` — Script for generating train/test subsets  
+* `irdropnet_final.pth` — Trained model weights  
+
+---
 
 ## 7. Requirements
-* Python 3.8+
-* PyTorch (CUDA recommended)
-* NumPy, Matplotlib
-* OpenCV (`opencv-python`)
+* Python 3.8+  
+* PyTorch (CUDA recommended)  
+* NumPy, Matplotlib  
+* OpenCV (`opencv-python`)  
+
