@@ -68,8 +68,8 @@ $$L_{Total} = L_{MAE} + \lambda \times L_{Gradient}$$
 ## 5. Results
 * **Training Data:** 50 Samples (CircuitNet Subset)
 * **Test Data:** 10 Samples
-* **Final Accuracy:** The model achieved an average error of **~9.58 Volts** on a scale of 0-50V.
-* **Visual Quality:** The model successfully reconstructs fine-grained power grid lines and correctly locates "hotspots" (red areas) where voltage drop is critical.
+* **Final Accuracy:** The model achieved an average error of **~9.75 Volts** on a scale of 0-50V.
+* **Visual Quality:** The model successfully reconstructs fine-grained power grid lines and correctly locates "hotspots" (yellow areas) where voltage drop is critical.
 
 ---
 
