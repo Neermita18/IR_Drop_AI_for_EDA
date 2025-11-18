@@ -4,7 +4,7 @@
 
 This model is trained on the **CircuitNet** dataset.
 
-<img width="1774" height="515" alt="image" src="https://github.com/user-attachments/assets/ecec5daa-d357-464d-8afc-9d5232dc47e7" />
+<img width="1774" height="516" alt="image" src="https://github.com/user-attachments/assets/4d1e636d-168f-47dd-8ac1-cd453f0052f9" />
 
 ---
 
